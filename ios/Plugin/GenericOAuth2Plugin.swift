@@ -11,7 +11,7 @@ typealias JSObject = [String: Any]
  * here: https://capacitorjs.com/docs/plugins/ios
  */
 @objc(GenericOAuth2Plugin)
-public class GenericOAuth2Plugin: CAPPlugin {
+public class GenericOAuth2Plugin: CAPPlugin, ASWebAuthenticationPresentationContextProviding {
 
     var savedPluginCall: CAPPluginCall?
 
@@ -66,6 +66,16 @@ public class GenericOAuth2Plugin: CAPPlugin {
     var oauth2SafariDelegate: OAuth2SafariDelegate?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
+
+    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        var view: ASPresentationAnchor?
+
+        DispatchQueue.main.sync {
+            view = self.bridge?.webView?.window
+        }
+
+        return view ?? ASPresentationAnchor()
+    }
 
     func registerHandlers() {
         let classCount = objc_getClassList(nil, 0)
@@ -279,7 +289,11 @@ public class GenericOAuth2Plugin: CAPPlugin {
                     )
                 }
 
-                let urlHandler = SafariURLHandler(viewController: (bridge?.viewController)!, oauthSwift: oauthSwift)
+                let urlHandler = ASWebAuthenticationURLHandler(
+                    callbackUrlScheme: redirectUrl.replacingOccurrences(of: "://callback", with: ""),
+                    presentationContextProvider: self,
+                    prefersEphemeralWebBrowserSession: false
+                );
                 // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
                 urlHandler.delegate = self.oauth2SafariDelegate
                 oauthSwift.authorizeURLHandler = urlHandler
