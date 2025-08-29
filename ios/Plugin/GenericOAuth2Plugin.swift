@@ -295,7 +295,7 @@ public class GenericOAuth2Plugin: CAPPlugin, ASWebAuthenticationPresentationCont
                     prefersEphemeralWebBrowserSession: false
                 );
                 // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
-                urlHandler.delegate = self.oauth2SafariDelegate
+                // urlHandler.delegate = self.oauth2SafariDelegate
                 oauthSwift.authorizeURLHandler = urlHandler
                 self.oauthSwift = oauthSwift
 
